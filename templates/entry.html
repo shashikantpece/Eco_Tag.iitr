@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block body %}
+<div class="card scan"><span class="chip {{e.kind}}">{{e.kind}}</span><h2>{{e.name}}</h2>
+<img src="/qr/{{e.id}}.png" alt="QR">
+<div class="kv">
+ <div><span>Species</span>{{e.species}}</div><div><span>Status</span>{{e.status or '-'}}</div>
+ <div><span>Notes</span>{{e.notes or '-'}}</div><div><span>Last updated</span>{{e.last_update}}</div>
+ <div><span>Location</span>{{'%.5f'|format(e.lat)}}, {{'%.5f'|format(e.lon)}}</div></div>
+<p><a class="btn" href="/map?focus={{e.id}}">Show on map</a></p></div>{% endblock %}

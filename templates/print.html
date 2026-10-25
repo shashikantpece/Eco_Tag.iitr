@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block body %}
+<p class="noprint"><button class="btn" onclick="window.print()">🖨 Print QR sheet</button></p>
+<div class="sheet">{% for e in rows %}<div class="tag"><img src="/qr/{{e.id}}.png"><b>{{e.name}}</b><br>{{e.species}}</div>{% endfor %}</div>
+{% endblock %}

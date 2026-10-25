@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block body %}
+<div id="m" style="height:75vh;border-radius:14px;border:1px solid var(--line)"></div>
+<p class="hint">🟢 tree &nbsp; 🔴 dog &nbsp; 🔵 cat &nbsp; ⚪ other</p>
+<script>
+var rows={{rows|tojson}}, col={tree:'#2f7d4f',dog:'#c0392b',cat:'#2e6fb5',other:'#777'};
+var m=L.map('m').setView([29.8649,77.8965],16);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+var focus=new URLSearchParams(location.search).get('focus');
+rows.forEach(function(e){
+ var c=L.circleMarker([e.lat,e.lon],{color:col[e.kind],fillOpacity:.8,radius:9}).addTo(m)
+  .bindPopup('<b>'+e.name+'</b><br>'+e.species+'<br>'+(e.status||'')+'<br><a href="/entry/'+e.id+'">details</a>');
+ if(String(e.id)===focus){m.setView([e.lat,e.lon],19);c.openPopup();}
+});
+</script>{% endblock %}

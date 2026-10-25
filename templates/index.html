@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block body %}
+<div class="stats">
+ <div class="stat"><b>{{stats.total}}</b><span>Total entries</span></div>
+ <div class="stat"><b>{{stats.tree}}</b><span>Trees</span></div>
+ <div class="stat"><b>{{stats.dog}}</b><span>Dogs</span></div>
+ <div class="stat"><b>{{stats.cat}}</b><span>Cats</span></div>
+ <div class="stat"><b>{{stats.tagged}}/{{stats.total}}</b><span>QR tags placed</span></div>
+</div>
+<form class="bar" method="get">
+ <input name="q" value="{{q}}" placeholder="Search name, species, status...">
+ <select name="kind" onchange="this.form.submit()"><option value="">All types</option>
+ {% for k in kinds %}<option value="{{k}}" {{'selected' if k==kind}}>{{k|title}}</option>{% endfor %}</select>
+ <button class="btn">Search</button><a class="btn ghost" href="/add">+ Add new</a>
+</form>
+{% for e in rows %}
+<div class="row {{'done' if e.tagged}}">
+ <img src="/qr/{{e.id}}.png" alt="QR">
+ <div class="main"><b>{{e.name}}</b> <span class="chip {{e.kind}}">{{e.kind}}</span>
+  <div>{{e.species}} · {{e.status or 'no status'}} · updated {{e.last_update}}</div></div>
+ <form method="post" action="/toggle/{{e.id}}"><button class="btn sm ghost">{{'✓ Tag placed' if e.tagged else 'Mark tag placed'}}</button></form>
+ <a class="btn sm ghost" href="/entry/{{e.id}}">View</a>
+ <a class="btn sm ghost" href="/edit/{{e.id}}">Edit</a>
+ <form method="post" action="/delete/{{e.id}}" onsubmit="return confirm('Delete {{e.name}}?')"><button class="btn sm red">Delete</button></form>
+</div>
+{% else %}<p>No entries found.</p>{% endfor %}
+{% endblock %}

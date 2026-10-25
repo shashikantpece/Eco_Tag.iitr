@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EcoTag IITR</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script></head><body>
+<div class="nav"><b>🌿 EcoTag IITR</b><a href="/">Dashboard</a><a href="/map">Map</a><a href="/print">Print QR</a><a class="btn sm" href="/add">+ Add</a></div>
+<div class="wrap"><p class="hint noprint">QR codes currently point to: <b>{{ qr_base }}</b> (phone must be able to open this address)</p>{% block body %}{% endblock %}</div></body></html>

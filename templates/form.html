@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block body %}
+<div class="card"><h2>{{ 'Edit ' + e.name if e else 'Add new entry' }}</h2>
+<form method="post">
+ <label>Type</label><select name="kind">{% for k in kinds %}<option value="{{k}}" {{'selected' if e and e.kind==k}}>{{k|title}}</option>{% endfor %}</select>
+ <label>Name / ID</label><input name="name" required value="{{e.name if e}}" placeholder="e.g. Tree-24 or Moti">
+ <label>Species</label><input name="species" list="sp" required value="{{e.species if e}}" placeholder="Pick existing or type a new species">
+ <datalist id="sp">{% for s in species %}<option value="{{s}}">{% endfor %}</datalist>
+ <div class="hint">Typing a new species adds it automatically.</div>
+ <label>Status</label><input name="status" value="{{e.status if e}}" placeholder="e.g. Vaccinated + Sterilized / Fertilized">
+ <label>Notes</label><textarea name="notes" rows="3">{{e.notes if e}}</textarea>
+ <label>Location - click the map to set it</label><div id="pick"></div>
+ <div class="two"><div><label>Latitude</label><input id="lat" name="lat" required value="{{e.lat if e else 29.8649}}"></div>
+ <div><label>Longitude</label><input id="lon" name="lon" required value="{{e.lon if e else 77.8965}}"></div></div>
+ <p><button type="button" class="btn ghost sm" onclick="useMe()">📍 Use my current location</button></p>
+ <button class="btn">Save</button> <a class="btn ghost" href="/">Cancel</a>
+</form></div>
+<script>
+var lat=parseFloat(document.getElementById('lat').value), lon=parseFloat(document.getElementById('lon').value);
+var m=L.map('pick').setView([lat,lon],17);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+var mk=L.marker([lat,lon]).addTo(m);
+function setPos(a,b){mk.setLatLng([a,b]);document.getElementById('lat').value=a.toFixed(6);document.getElementById('lon').value=b.toFixed(6);}
+m.on('click',function(ev){setPos(ev.latlng.lat,ev.latlng.lng)});
+function useMe(){navigator.geolocation.getCurrentPosition(function(p){setPos(p.coords.latitude,p.coords.longitude);m.setView([p.coords.latitude,p.coords.longitude],18)},function(){alert('Location not available')})}
+</script>{% endblock %}

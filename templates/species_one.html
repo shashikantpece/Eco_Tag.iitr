@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block body %}
+<div class="card scan"><span class="chip">{{HABIT.get(s.habit, s.habit)}}</span><h2><i>{{s.sci}}</i></h2>
+<div class="kv">
+ <div><span>Common name</span>{{s.common or '-'}}</div><div><span>Family</span>{{s.family}}</div>
+ <div><span>Kind of use</span>{{s.cat}}</div>
+ <div><span>Uses (IIT Roorkee biodiversity report)</span>{{s.uses or 'Not stated in the report'}}</div>
+ <div><span>Where it grows on campus {{'(stated in the report)' if s.basis=='R' else '(approximate estimate)'}}</span>{{s.loc}}</div></div>
+<img src="/qr/species/{{s.id}}.png" alt="QR code for this species">
+<p class="hint">Scan to open this page. {% if is_admin %}<a href="/print/species">Print signs for all species</a>{% endif %}</p>
+<div class="sec"><h3>Tagged on this site ({{tagged|length}})</h3>
+{% for t in tagged %}<p style="margin:6px 0"><a href="/entry/{{t.id}}">{{t.name}}</a> · <a href="/map?focus={{t.id}}">map</a></p>{% else %}<p class="hint">None tagged yet.</p>{% endfor %}
+<p>{% if tagged %}<a class="btn ghost" href="/map?species={{(s.common or s.sci)|urlencode}}">Show all on map</a> {% endif %}
+{% if is_admin %}<a class="btn" href="/add?species={{(s.common or s.sci)|urlencode}}&kind={{ 'tree' if s.habit=='T' else 'other' }}">+ Tag one</a>{% endif %}</p></div>
+<p><a href="/species">&larr; Back to catalog</a></p></div>{% endblock %}

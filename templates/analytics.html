@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block body %}
+{% macro hb(items) %}{% for b in items %}<div class="hb"><span class="l" title="{{b.label}}">{{b.label}}</span><span class="t"><i style="width:{{b.pct}}%"></i></span><span class="n">{{b.n}}</span></div>{% else %}<p class="hint">No data yet.</p>{% endfor %}{% endmacro %}
+<h2 style="margin-top:0">Analytics</h2>
+<div class="grid2">
+ <div class="panel"><h3>QR tag progress</h3><div class="donut" style="--p:{{pct}}"><span>{{pct}}%</span></div>
+  <p class="mut" style="text-align:center;margin:6px 0 0">{{placed}} of {{n}} tags placed</p></div>
+ <div class="panel"><h3>Species coverage</h3><div class="donut" style="--p:{{cov_pct}}"><span>{{cov_pct}}%</span></div>
+  <p class="mut" style="text-align:center;margin:6px 0 0">{{cov}} of {{cov_total}} catalog species tagged</p>
+  <p class="hint" style="text-align:center"><a href="/species?tag=untagged">See species still to find</a></p></div>
+ <div class="panel"><h3>Entries by type</h3>{{ hb(kinds) }}</div>
+ <div class="panel"><h3>Most tagged species</h3>{{ hb(top_species) }}
+  <p class="hint">{{matched}} of {{n}} entries are matched to the plant catalog.</p></div>
+ <div class="panel"><h3>Care schedule</h3>{{ hb(care) }}</div>
+ <div class="panel"><h3>Community reports</h3><span class="bigk">{{rep_open}}</span> <span class="mut">open of {{rep_total}} total</span>{{ hb(rep_kinds) }}</div>
+ <div class="panel"><h3>Plant catalog: by habit</h3>{{ hb(cat_habit) }}</div>
+ <div class="panel"><h3>Plant catalog: by kind of use</h3>{{ hb(cat_use) }}
+  <p class="hint">{{cat_total}} plants; {{cat_report}} have a location stated in the report, the rest are estimates.</p></div>
+</div>{% endblock %}

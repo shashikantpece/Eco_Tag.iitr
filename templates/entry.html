@@ -1,0 +1,45 @@
+{% extends "base.html" %}{% block body %}
+<div class="card scan"><span class="chip {{e.kind}}">{{e.kind}}</span><h2>{{e.name}}</h2>
+{% if e.photo %}<img class="thumb" src="{{ url_for('static', filename='uploads/'+e.photo) }}" alt="{{e.name}}">{% endif %}
+<img src="/qr/{{e.id}}.png" alt="QR">
+<div class="kv">
+ <div><span>Species</span>{{e.species}}</div><div><span>Latest status</span>{{e.status or '-'}}</div>
+ <div><span>Notes</span>{{e.notes or '-'}}</div><div><span>Last updated</span>{{e.last_update}}</div>
+ <div><span>Location</span>{{'%.5f'|format(e.lat)}}, {{'%.5f'|format(e.lon)}}</div></div>
+<p><a class="btn" href="/map?focus={{e.id}}">Show on map</a> <button class="btn ghost" id="shareBtn" type="button">Share</button></p>
+
+{% if sp %}<div class="sec"><h3>About this species</h3><div class="kv">
+ <div><span>Scientific name</span><i>{{sp.sci}}</i> ({{HABIT.get(sp.habit, sp.habit)}}, family {{sp.family}})</div>
+ {% if sp.common %}<div><span>Common name</span>{{sp.common}}</div>{% endif %}
+ <div><span>Uses (IIT Roorkee biodiversity report)</span>{{sp.uses or 'Not stated in the report'}}</div>
+ <div><span>Where it grows on campus {{'(stated in the report)' if sp.basis=='R' else '(approximate)'}}</span>{{sp.loc}}</div></div>
+ <p><a href="/species/{{sp.id}}">More about this species</a> · <a href="/map?species={{(sp.common or sp.sci)|urlencode}}">See all on the map</a></p></div>{% endif %}
+
+{% if nearby %}<div class="sec"><h3>Nearby on campus</h3>
+{% for o in nearby %}<p style="margin:6px 0"><a href="/entry/{{o.id}}">{{o.name}}</a> <span class="chip {{o.kind}}">{{o.kind}}</span>
+ {{o.sp_common or o.species}} · <span class="mut">{{ '%d m'|format(o.dist) if o.dist < 1000 else '%.1f km'|format(o.dist/1000) }}</span></p>{% endfor %}</div>{% endif %}
+
+<div class="sec"><h3>Care history</h3>
+{% if events %}<div class="tl">{% for ev in events %}<div><b>{{ev.type}}</b> <small>{{ev.date}}</small>
+ {% if ev.note %}<br>{{ev.note}}{% endif %}
+ {% if ev.next_due %}<br><span class="chip {{'warn' if ev.next_due < today else 'ok'}}">next due {{ev.next_due}}</span>{% endif %}
+ {% if is_admin %}<form method="post" action="/event/delete/{{ev.id}}" style="display:inline"><button class="btn sm red">x</button></form>{% endif %}</div>{% endfor %}</div>
+{% else %}<p class="hint">No care records yet.</p>{% endif %}</div>
+
+{% if is_admin %}<details class="sec"><summary>Add care record</summary>
+<form method="post" action="/event/{{e.id}}">
+ <select name="type">{% for t in event_types %}<option>{{t}}</option>{% endfor %}</select>
+ <div class="two"><div><label>Date</label><input type="date" name="date" value="{{today}}"></div>
+ <div><label>Next due (optional)</label><input type="date" name="next_due"></div></div>
+ <label>Note</label><input name="note" placeholder="e.g. Rabies vaccine, batch / vet name"><p><button class="btn">Add record</button></p></form></details>{% endif %}
+
+<details class="sec"><summary>See a problem? Report it</summary><p class="hint">Injured, sick or aggressive? Let the campus care team know.</p>
+<form method="post" action="/report/{{e.id}}">
+ <select name="kind">{% for k in report_kinds %}<option>{{k}}</option>{% endfor %}</select>
+ <label>Details</label><textarea name="note" rows="2" maxlength="500" placeholder="What did you see? Where exactly?"></textarea>
+ <p><button class="btn red">Send report</button></p></form></details>
+</div>
+<script>
+document.getElementById('shareBtn').onclick=function(){var d={title:{{ e.name|tojson }},url:location.href};
+ if(navigator.share){navigator.share(d).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(location.href);this.textContent='Link copied'}else{prompt('Copy this link',location.href)}};
+</script>{% endblock %}

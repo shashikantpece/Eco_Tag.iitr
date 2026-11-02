@@ -1,0 +1,25 @@
+<div class="hero">
+{% if hero_photo %}<div class="hero-photo" style="background-image:url('{{ url_for('static', filename=hero_photo) }}')"></div><div class="hero-shade"></div>
+{% else %}<svg viewBox="0 0 900 210" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+ <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe0f2"/><stop offset="1" stop-color="#f6f1e4"/></linearGradient></defs>
+ <rect width="900" height="210" fill="url(#sky)"/>
+ <rect y="186" width="900" height="24" fill="#74a877"/>
+ <rect x="120" y="128" width="660" height="60" fill="#c8a27b"/><rect x="120" y="120" width="660" height="9" fill="#a37f58"/>
+ <rect x="120" y="100" width="56" height="88" fill="#cfa982"/><rect x="724" y="100" width="56" height="88" fill="#cfa982"/>
+ <path d="M116 100 Q148 66 180 100Z M720 100 Q752 66 784 100Z" fill="#8c6a4a"/>
+ <rect x="350" y="86" width="200" height="102" fill="#d6b18a"/><rect x="346" y="80" width="208" height="8" fill="#a37f58"/>
+ <rect x="408" y="44" width="84" height="40" fill="#d0a981"/>
+ <path d="M402 46 Q450 -14 498 46Z" fill="#8c6a4a"/><rect x="447" y="6" width="6" height="16" fill="#8c6a4a"/>
+ <rect x="436" y="54" width="28" height="30" rx="14" fill="#7a5a3e"/>
+ <path d="M424 188 V160 Q450 134 476 160 V188Z" fill="#6e4f37"/>
+ {% for x in range(138, 330, 26) %}<rect x="{{x}}" y="140" width="13" height="34" rx="6.5" fill="#7a5a3e"/>{% endfor %}
+ {% for x in range(584, 770, 26) %}<rect x="{{x}}" y="140" width="13" height="34" rx="6.5" fill="#7a5a3e"/>{% endfor %}
+ {% for x in range(366, 420, 26) %}<rect x="{{x}}" y="104" width="13" height="34" rx="6.5" fill="#7a5a3e"/>{% endfor %}
+ {% for x in range(484, 540, 26) %}<rect x="{{x}}" y="104" width="13" height="34" rx="6.5" fill="#7a5a3e"/>{% endfor %}
+ <circle cx="70" cy="165" r="26" fill="#3f8a55"/><rect x="67" y="170" width="6" height="20" fill="#6b4a2f"/>
+ <circle cx="835" cy="160" r="30" fill="#3f8a55"/><rect x="832" y="168" width="6" height="22" fill="#6b4a2f"/>
+ <circle cx="270" cy="188" r="12" fill="#4f9a63"/><circle cx="640" cy="188" r="12" fill="#4f9a63"/>
+</svg>{% endif %}
+<div class="txt">{% if logo_exists %}<img class="logo" src="{{ url_for('static', filename='iitr-logo.png') }}" alt="IIT Roorkee">{% endif %}
+<div><h1>EcoTag IITR</h1><p>A living map of the trees and animals of our campus</p></div></div>
+</div>

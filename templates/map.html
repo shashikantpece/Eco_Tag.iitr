@@ -1,0 +1,51 @@
+{% extends "base.html" %}{% block body %}
+<div class="mapbar">
+ <input id="q" placeholder="Search name, species, common name... (press / )">
+ <select id="base"><option value="street">Street map</option><option value="sat">Satellite</option></select>
+ <button class="btn ghost sm" id="fit">Fit all</button><button class="btn ghost sm" id="loc">📍 Locate me</button>
+</div>
+<div class="chips" id="chips">
+ <button class="fchip on" data-k="tree">🟢 Trees</button><button class="fchip on" data-k="dog">🔴 Dogs</button>
+ <button class="fchip on" data-k="cat">🔵 Cats</button><button class="fchip on" data-k="other">⚪ Other</button>
+ <button class="fchip" id="onlyrep">🟠 Open reports only</button><span class="hint" id="count" style="margin:0 0 0 auto"></span>
+</div>
+<div id="m"></div>
+<script>
+var rows={{rows|tojson}}, col={tree:'#2f7d4f',dog:'#c0392b',cat:'#2e6fb5',other:'#777'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+var street=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'street-tiles',attribution:'&copy; OpenStreetMap contributors'});
+var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'});
+var m=L.map('m',{layers:[street]}).setView([29.8649,77.8965],16);
+document.getElementById('base').onchange=function(){if(this.value==='sat'){m.removeLayer(street);sat.addTo(m)}else{m.removeLayer(sat);street.addTo(m)}};
+var params=new URLSearchParams(location.search), focus=params.get('focus'), qbox=document.getElementById('q');
+if(params.get('species'))qbox.value=params.get('species');
+var items=rows.map(function(e){
+ var c=L.circleMarker([e.lat,e.lon],{color:e.open_reports?'#e67e00':col[e.kind]||'#777',fillColor:col[e.kind]||'#777',fillOpacity:.85,radius:e.open_reports?12:9,weight:e.open_reports?4:3});
+ var h=(e.photo_url?'<img src="'+esc(e.photo_url)+'" alt="">':'')+'<b>'+esc(e.name)+'</b><br>'+esc(e.sp_common||e.species)+(e.sp_sci?' <i>('+esc(e.sp_sci)+')</i>':'')+
+  '<br>'+esc(e.status||'')+(e.sp_uses?'<br><span style="color:#6b7a71">Uses: '+esc(e.sp_uses)+'</span>':'')+(e.open_reports?'<br>⚠ '+e.open_reports+' open report(s)':'')+
+  '<br><a href="/entry/'+e.id+'">Open details</a>';
+ c.bindPopup(h,{maxWidth:230});
+ return {e:e,c:c,text:(e.name+' '+e.species+' '+e.sp_common+' '+e.sp_sci+' '+(e.status||'')).toLowerCase()};
+});
+var on={tree:true,dog:true,cat:true,other:true}, rep=false;
+function apply(fit){
+ var t=qbox.value.toLowerCase().trim(), vis=[];
+ items.forEach(function(it){
+  var ok=on[it.e.kind]!==false&&(!t||it.text.indexOf(t)>-1)&&(!rep||it.e.open_reports>0);
+  if(ok){it.c.addTo(m);vis.push(it)}else{m.removeLayer(it.c)}
+ });
+ document.getElementById('count').textContent=vis.length+' of '+items.length+' shown';
+ if(fit&&vis.length){m.fitBounds(L.latLngBounds(vis.map(function(i){return[i.e.lat,i.e.lon]})).pad(.2),{maxZoom:19})}
+}
+document.querySelectorAll('#chips [data-k]').forEach(function(b){b.onclick=function(){on[b.dataset.k]=!on[b.dataset.k];b.classList.toggle('on',on[b.dataset.k]);apply(false)}});
+document.getElementById('onlyrep').onclick=function(){rep=!rep;this.classList.toggle('on',rep);apply(false)};
+qbox.addEventListener('input',function(){apply(false)});
+document.getElementById('fit').onclick=function(){qbox.value='';apply(true)};
+var me;document.getElementById('loc').onclick=function(){
+ if(!window.isSecureContext){alert('Chrome only allows "Locate me" on HTTPS pages (or localhost).');return}
+ m.locate({setView:true,maxZoom:18,enableHighAccuracy:true})};
+m.on('locationfound',function(ev){if(me)m.removeLayer(me);me=L.circle(ev.latlng,{radius:ev.accuracy,color:'#2e6fb5'}).addTo(m).bindPopup('You are here').openPopup()});
+m.on('locationerror',function(){alert('Could not get your location.')});
+apply(!!params.get('species'));
+if(focus){items.forEach(function(it){if(String(it.e.id)===focus){m.setView([it.e.lat,it.e.lon],19);it.c.openPopup()}})}
+</script>{% endblock %}

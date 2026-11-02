@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<h2>Community reports</h2>
+{% for r in rows %}<div class="row {{'done' if r.handled}}"><div class="main"><b>{{r.kind}}</b> · <a href="/entry/{{r.entry_id}}">{{r.name}}</a>
+<div>{{r.date}} · {{r.note or 'no details'}}</div></div>
+{% if not r.handled %}<form method="post" action="/reports/resolve/{{r.id}}"><button class="btn sm">Mark resolved</button></form>{% else %}<span class="chip ok">resolved</span>{% endif %}</div>
+{% else %}<p>No reports yet.</p>{% endfor %}{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<div class="noprint bar"><button class="btn" onclick="window.print()">🖨 Print species signs</button>
+ <select id="h"><option value="">All habits</option>{% for k,v in HABIT.items() %}<option value="{{k}}">{{v}}</option>{% endfor %}</select>
+ <label style="margin:0;font-weight:400;display:flex;gap:6px;align-items:center"><input type="checkbox" id="u" style="width:auto"> Only species not yet tagged</label>
+ <span class="hint" id="c" style="margin:0"></span></div>
+<p class="hint noprint">Each sign opens the plant's catalog page (uses, family, campus location). Signs need no GPS coordinates, so they work for every one of the {{rows|length}} species.</p>
+<div class="sheet">{% for s in rows %}<div class="tag" data-habit="{{s.habit}}" data-tagged="{{s.tagged}}"><img src="/qr/species/{{s.id}}.png"><b>{{s.common or s.sci}}</b><br><i>{{s.sci}}</i></div>{% endfor %}</div>
+<script>
+var h=document.getElementById('h'),u=document.getElementById('u'),tags=[].slice.call(document.querySelectorAll('.tag'));
+function f(){var n=0;tags.forEach(function(t){var ok=(!h.value||t.dataset.habit===h.value)&&(!u.checked||t.dataset.tagged==='0');t.style.display=ok?'':'none';if(ok)n++});document.getElementById('c').textContent=n+' labels'}
+h.onchange=f;u.onchange=f;f();
+</script>{% endblock %}

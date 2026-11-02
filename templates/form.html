@@ -1,0 +1,45 @@
+{% extends "base.html" %}{% block body %}
+<div class="card"><h2>{{ 'Edit ' + e.name if e else 'Add new entry' }}</h2>
+<form method="post" enctype="multipart/form-data">
+ <label>Species</label><input id="sp" name="species" list="splist" required autocomplete="off" value="{{e.species if e else request.args.get('species','')}}" placeholder="Start typing: common or scientific name">
+ <datalist id="splist">{% for s in species %}<option value="{{s}}">{% endfor %}</datalist>
+ <div class="hint">Pick a plant from the catalog to see its uses and campus location, or type any new species.</div>
+ <div id="preview" class="preview" style="display:none"></div>
+ <label>Type</label><select id="kind" name="kind">{% for k in kinds %}<option value="{{k}}" {{'selected' if (e and e.kind==k) or (not e and request.args.get('kind')==k)}}>{{k|title}}</option>{% endfor %}</select>
+ <label>Name / ID</label><input name="name" required value="{{e.name if e}}" placeholder="e.g. Tree-24 or Moti">
+ <label>Status</label><input name="status" value="{{e.status if e}}" placeholder="e.g. Vaccinated + Sterilized / Fertilized">
+ <label>Photo (optional)</label><input type="file" name="photo" accept="image/*" capture="environment">
+ <label>Notes</label><textarea name="notes" rows="3">{{e.notes if e}}</textarea>
+ <label>Location - click the map to set it</label><div id="pick"></div>
+ <div class="two"><div><label>Latitude</label><input id="lat" name="lat" required value="{{e.lat if e else 29.8649}}"></div>
+ <div><label>Longitude</label><input id="lon" name="lon" required value="{{e.lon if e else 77.8965}}"></div></div>
+ <p><button type="button" class="btn ghost sm" onclick="useMe()">📍 Use my current location</button></p>
+ <button class="btn">Save</button> <a class="btn ghost" href="/">Cancel</a>
+</form></div>
+<script>
+var lat=parseFloat(document.getElementById('lat').value), lon=parseFloat(document.getElementById('lon').value);
+var m=L.map('pick').setView([lat,lon],17);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{className:'street-tiles'}).addTo(m);
+var mk=L.marker([lat,lon]).addTo(m);
+function setPos(a,b){mk.setLatLng([a,b]);document.getElementById('lat').value=a.toFixed(6);document.getElementById('lon').value=b.toFixed(6);}
+m.on('click',function(ev){setPos(ev.latlng.lat,ev.latlng.lng)});
+function useMe(){
+ if(!window.isSecureContext){alert('Chrome only allows "current location" on HTTPS pages (or localhost). Click the map instead, or open this site through an HTTPS link.');return}
+ navigator.geolocation.getCurrentPosition(function(p){setPos(p.coords.latitude,p.coords.longitude);m.setView([p.coords.latitude,p.coords.longitude],18)},
+  function(er){alert(er.code===1?'Location permission was denied in the browser.':'Could not get your location (no signal?).')},{enableHighAccuracy:true,timeout:15000})}
+// live catalog preview
+var sp=document.getElementById('sp'), box=document.getElementById('preview'), kind=document.getElementById('kind'), tmr;
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function check(){
+ var v=sp.value.trim(); if(!v){box.style.display='none';return}
+ fetch('/api/species?name='+encodeURIComponent(v)).then(function(r){return r.json()}).then(function(d){
+  if(!d.found){box.style.display='block';box.innerHTML='<span class="mut">Not in the campus plant catalog. It will still be saved as typed.</span>';return}
+  box.style.display='block';
+  box.innerHTML='<b>✓ '+esc(d.common||d.sci)+' <i>('+esc(d.sci)+')</i></b>'+esc(d.habit_label)+' · family '+esc(d.family)+
+   '<span class="k">Uses (campus biodiversity report)</span>'+esc(d.uses||'Not stated in the report')+
+   '<span class="k">Where it grows on campus '+(d.basis==='R'?'(stated in the report)':'(approximate)')+'</span>'+esc(d.loc);
+  if(kind.value!=='dog'&&kind.value!=='cat'){kind.value=d.habit==='T'?'tree':'other'}
+ }).catch(function(){});
+}
+sp.addEventListener('input',function(){clearTimeout(tmr);tmr=setTimeout(check,250)}); check();
+</script>{% endblock %}

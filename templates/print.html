@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block body %}
+<div class="noprint bar"><button class="btn" onclick="window.print()">🖨 Print QR sheet</button>
+ <select id="k"><option value="">All types</option><option>tree</option><option>dog</option><option>cat</option><option>other</option></select>
+ <label style="margin:0;font-weight:400;display:flex;gap:6px;align-items:center"><input type="checkbox" id="u" style="width:auto"> Only tags not yet placed</label>
+ <span class="hint" id="c" style="margin:0"></span></div>
+<div class="sheet" id="sheet">{% for e in rows %}<div class="tag" data-kind="{{e.kind}}" data-tagged="{{e.tagged}}"><img src="/qr/{{e.id}}.png"><b>{{e.name}}</b><br>{{e.sp_common or e.species}}{% if e.sp_sci %}<br><i>{{e.sp_sci}}</i>{% endif %}</div>{% endfor %}</div>
+<script>
+var k=document.getElementById('k'),u=document.getElementById('u'),tags=[].slice.call(document.querySelectorAll('.tag'));
+function f(){var n=0;tags.forEach(function(t){var ok=(!k.value||t.dataset.kind===k.value)&&(!u.checked||t.dataset.tagged==='0');t.style.display=ok?'':'none';if(ok)n++});document.getElementById('c').textContent=n+' labels'}
+k.onchange=f;u.onchange=f;f();
+</script>{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block body %}
+<h2 style="margin-top:0">Campus plant catalog</h2>
+<p><b>{{covered}} of {{total_species}}</b> species have at least one tagged individual on this site.
+{% if is_admin %}<a class="btn sm" href="/print/species">🖨 Print QR signs for all species</a>{% endif %}</p>
+<p class="hint">{{rows|length}} plant(s) shown. Source: IIT Roorkee biodiversity report. Locations marked "approximate" are estimates, not survey data.</p>
+<form class="bar" method="get"><input id="q" name="q" value="{{q}}" placeholder="Search name, family or use...  (press / )">
+ <select name="habit" onchange="this.form.submit()"><option value="">All habits</option>
+ {% for k,v in HABIT.items() %}<option value="{{k}}" {{'selected' if k==habit}}>{{v}}</option>{% endfor %}</select>
+ <select name="cat" onchange="this.form.submit()"><option value="">All uses</option>
+ {% for c in cats %}<option value="{{c}}" {{'selected' if c==cat}}>{{c}}</option>{% endfor %}</select>
+ <select name="tag" onchange="this.form.submit()"><option value="">Tagged or not</option>
+ <option value="tagged" {{'selected' if tag=='tagged'}}>Tagged on site</option><option value="untagged" {{'selected' if tag=='untagged'}}>Not yet tagged</option></select>
+ <button class="btn">Search</button>{% if q or habit or cat or tag %}<a class="btn ghost" href="/species">Clear</a>{% endif %}</form>
+{% for s in rows %}<a href="/species/{{s.id}}" style="color:inherit;text-decoration:none"><div class="row"><div class="main">
+ <b><i>{{s.sci}}</i></b> <span class="chip">{{HABIT.get(s.habit, s.habit)}}</span>
+ {% if s.tagged %}<span class="chip ok">🏷 {{s.tagged}} tagged</span>{% endif %}
+ <div>{{s.common or '-'}} · {{s.family}} · {{s.uses or 'use not stated in the report'}}</div></div></div></a>
+{% else %}<p>No matches.</p>{% endfor %}{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}EcoTag IITR · A living map of campus trees and animals{% endblock %}
+{% block main %}
+<section class="landing">
+ {% if hero_photo %}<div class="l-bg" style="background-image:url('{{ url_for('static', filename=hero_photo) }}')"></div>{% endif %}
+ <div class="l-shade"></div>
+ <div class="l-inner">
+  {% if logo_exists %}<img class="l-logo" src="{{ url_for('static', filename='iitr-logo.png') }}" alt="IIT Roorkee logo">{% endif %}
+  <p class="eyebrow">CORE PROJECT &middot; IIT ROORKEE</p>
+  <h1>EcoTag IITR</h1>
+  <p class="lead">A living map of the trees and animals of our campus. Scan a QR tag to meet the tree or dog in front of you: what it is, how it is cared for, and where it lives.</p>
+  <div class="l-cta"><a class="btn big" href="/explore">Explore species &rarr;</a><a class="btn big ghostw" href="/map">View campus map</a></div>
+  <a class="scroll" href="#about">Learn more &darr;</a>
+ </div>
+</section>
+
+<section class="band"><div class="in">
+ <div><b class="count" data-to="{{stats.trees}}">{{stats.trees}}</b><span>Trees tagged</span></div>
+ <div><b class="count" data-to="{{stats.dogs}}">{{stats.dogs}}</b><span>Campus dogs</span></div>
+ <div><b class="count" data-to="{{stats.plants}}">{{stats.plants}}</b><span>Plant species in the catalog</span></div>
+ <div><b class="count" data-to="{{stats.tagged}}">{{stats.tagged}}</b><span>QR tags placed</span></div>
+</div></section>
+
+<section class="sect center reveal" id="about">
+ <h2>One scan tells you the story</h2>
+ <p class="sub">EcoTag gives every tagged tree and every community dog on campus its own page. Students, staff and visitors can learn about their green and furry neighbours, and the people who look after them can keep records in one shared place instead of scattered notes.</p>
+ <div class="fgrid">
+  <div class="fcard"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h3M20 17v4"/></svg></div>
+   <h3>QR tags</h3><p>Each tree and dog carries a QR code. Scanning it opens a page with its photo, species, status and location.</p></div>
+  <div class="fcard"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c8 0 14-5 14-14-9 0-14 5-14 14z"/><path d="M5 19c3-6 6-9 10-11"/></svg></div>
+   <h3>Species knowledge</h3><p>Trees link to a catalog of {{stats.plants}} plants from the campus biodiversity report, with their uses and where they grow.</p></div>
+  <div class="fcard"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"/></svg></div>
+   <h3>Care and safety</h3><p>Vaccination and fertiliser history with reminders, and a quick way for anyone to report an injured or sick animal.</p></div>
+  <div class="fcard"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+   <h3>Campus map</h3><p>See where every tagged tree and dog lives, search by name or species, and switch to satellite view.</p></div>
+ </div>
+</section>
+
+<section class="alt"><div class="sect center reveal">
+ <h2>How it works</h2>
+ <p class="sub">From a walk around campus to a page anyone can open.</p>
+ <div class="steps">
+  <div class="step"><div class="n">1</div><h3>Tag</h3><p>Volunteers walk the campus, photograph each tree or dog, note the species and drop a GPS pin.</p></div>
+  <div class="step"><div class="n">2</div><h3>Scan</h3><p>A QR code on the tag opens the entry on any phone, with no app to install.</p></div>
+  <div class="step"><div class="n">3</div><h3>Care</h3><p>Caretakers log vaccinations and treatments, and the community reports problems early.</p></div>
+ </div>
+</div></section>
+
+{% if featured %}
+<section class="sect center reveal">
+ <h2>Meet some campus residents</h2>
+ <p class="sub">A few of the trees and dogs already on the map. Open one to see its full page.</p>
+ <div class="gal">
+  {% for e in featured %}<a class="gcard" href="/entry/{{e.id}}"><img src="{{e.photo_url}}" alt="{{e.name}}" loading="lazy">
+   <div class="cap"><b>{{e.name}}</b>{{ e.sp_common or (e.species|capitalize) }}</div></a>{% endfor %}
+ </div>
+</section>
+{% endif %}
+
+<section class="cta-band reveal">
+ <h2>Ready to explore?</h2>
+ <p>Browse every tagged tree and dog, search by species, and open any entry.</p>
+ <a class="btn big" href="/explore">Explore species &rarr;</a>
+</section>
+<script>
+(function(){
+ var els=[].slice.call(document.querySelectorAll('.reveal'));
+ if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});}
+ else{var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.12});els.forEach(function(e){io.observe(e)});}
+ var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function run(el){var to=parseInt(el.dataset.to,10)||0,t0=null;if(reduce||!to){el.textContent=to;return}
+  function step(t){if(!t0)t0=t;var p=Math.min((t-t0)/1100,1);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+ var counts=[].slice.call(document.querySelectorAll('.count'));
+ if('IntersectionObserver' in window){var co=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){run(x.target);co.unobserve(x.target)}})},{threshold:.6});counts.forEach(function(c){co.observe(c)})}
+})();
+</script>
+{% endblock %}

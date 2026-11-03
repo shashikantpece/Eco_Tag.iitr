@@ -167,7 +167,7 @@ ALIASES = {"neem": "azadirachta indica", "peepal": "ficus religiosa", "pipal": "
            "bargad": "ficus benghalensis", "sheesham": "dalbergia sissoo", "shisham": "dalbergia sissoo", "amaltas": "cassia fistula",
            "arjuna": "terminalia arjuna", "imli": "tamarindus indica", "amla": "phyllanthus emblica", "bel": "aegle marmelos",
            "aam": "mangifera indica", "semal": "bombax ceiba", "palash": "butea monosperma", "gular": "ficus racemosa",
-           "eucalyptus": "eucalyptus camaldulensis", "nimbu": "citrus limonium", "lemon": "citrus limonium"}
+           "eucalyptus": "eucalyptus camaldulensis", "polyalthia longifolia": "monoon longifolium", "nimbu": "citrus limonium", "lemon": "citrus limonium"}
 
 def lookup():
     if "sp_lookup" not in g:
@@ -230,6 +230,17 @@ def logout():
 
 # ---------- ENTRIES ----------
 @app.route("/")
+def home():
+    db = get_db()
+    ents = annotate(db.execute("SELECT * FROM entries ORDER BY id").fetchall())
+    stats = {"trees": sum(1 for e in ents if e["kind"] == "tree"), "dogs": sum(1 for e in ents if e["kind"] == "dog"),
+             "plants": db.execute("SELECT COUNT(*) FROM species").fetchone()[0], "tagged": sum(e["tagged"] for e in ents)}
+    trees = [e for e in ents if e["kind"] == "tree" and e["photo"]][:4]
+    dogs = [e for e in ents if e["kind"] == "dog" and e["photo"]][:4]
+    featured = [x for pair in zip(trees, dogs) for x in pair] + trees[len(dogs):] + dogs[len(trees):]
+    return render_template("home.html", stats=stats, featured=featured)
+
+@app.route("/explore")
 def dashboard():
     db = get_db()
     rows = annotate(db.execute("SELECT * FROM entries ORDER BY id DESC").fetchall())

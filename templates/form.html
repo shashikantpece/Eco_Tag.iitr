@@ -14,7 +14,7 @@
  <div class="two"><div><label>Latitude</label><input id="lat" name="lat" required value="{{e.lat if e else 29.8649}}"></div>
  <div><label>Longitude</label><input id="lon" name="lon" required value="{{e.lon if e else 77.8965}}"></div></div>
  <p><button type="button" class="btn ghost sm" onclick="useMe()">📍 Use my current location</button></p>
- <button class="btn">Save</button> <a class="btn ghost" href="/">Cancel</a>
+ <button class="btn">Save</button> <a class="btn ghost" href="/explore">Cancel</a>
 </form></div>
 <script>
 var lat=parseFloat(document.getElementById('lat').value), lon=parseFloat(document.getElementById('lon').value);

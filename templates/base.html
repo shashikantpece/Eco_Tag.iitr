@@ -1,16 +1,17 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{% block title %}EcoTag IITR{% endblock %}</title>
-<script>(function(){try{var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=t}catch(e){}})()</script>
+<script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=t}catch(e){}})()</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script></head><body>
-<div class="nav">{% if logo_exists %}<img class="logo" src="{{ url_for('static', filename='iitr-logo.png') }}" alt="IIT Roorkee">{% endif %}<b>🌿 EcoTag IITR</b>
-<a href="/" class="{{'on' if path=='/'}}">Dashboard</a><a href="/map" class="{{'on' if path=='/map'}}">Map</a>
+<div class="nav">{% if logo_exists %}<img class="logo" src="{{ url_for('static', filename='iitr-logo.png') }}" alt="IIT Roorkee">{% endif %}<a class="brand" href="/"><b>🌿 EcoTag IITR</b></a>
+<div class="links"><a href="/" class="{{'on' if path=='/'}}">Home</a><a href="/explore" class="{{'on' if path.startswith('/explore') or path.startswith('/entry')}}">Species</a><a href="/map" class="{{'on' if path=='/map'}}">Map</a>
 <a href="/species" class="{{'on' if path.startswith('/species')}}">Plant catalog</a><a href="/analytics" class="{{'on' if path=='/analytics'}}">Analytics</a>
-{% if is_admin %}<a href="/reports" class="{{'on' if path.startswith('/reports')}}">Reports</a><a href="/print">Print QR</a><a href="/export.csv">Export</a><a class="btn sm" href="/add">+ Add</a><a href="/logout">Logout</a>{% else %}<a href="/login">Admin login</a>{% endif %}
+{% if is_admin %}<a href="/reports" class="{{'on' if path.startswith('/reports')}}">Reports</a><a href="/print">Print QR</a><a href="/export.csv">Export</a><a class="btn sm" href="/add">+ Add</a><a href="/logout">Logout</a>{% else %}<a href="/login">Admin login</a>{% endif %}</div>
 <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">🌓</button></div>
-<div class="wrap"><p class="hint noprint">QR codes currently point to: <b>{{ qr_base }}</b> (phone must be able to open this address)</p>
-{% block body %}{% endblock %}</div>
+{% block main %}<div class="wrap">{% if is_admin %}<p class="hint noprint">QR codes currently point to: <b>{{ qr_base }}</b> (phone must be able to open this address)</p>{% endif %}
+{% block body %}{% endblock %}</div>{% endblock %}
+<footer class="foot noprint">EcoTag IITR &middot; a CORE project at IIT Roorkee &middot; trees, animals and the people who care for them{% if not is_admin %} &middot; <a href="/login">Admin login</a>{% endif %}</footer>
 <div id="toasts">{% for m in get_flashed_messages() %}<div class="toast">{{ m }}</div>{% endfor %}</div>
 <script>
 document.getElementById('themeBtn').onclick=function(){var d=document.documentElement,t=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=t;try{localStorage.setItem('theme',t)}catch(e){}};

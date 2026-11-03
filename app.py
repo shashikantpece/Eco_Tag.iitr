@@ -16,7 +16,8 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-me-before-deploying")
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")   # set a real one before deploying!
 
-KINDS = ["tree", "dog", "cat", "other"]
+# Removed "cat" and "other" from the tracked kinds
+KINDS = ["tree", "dog"]
 EVENT_TYPES = ["Vaccination", "Sterilization", "Fertilizer", "Pesticide", "Checkup", "Treatment", "Other"]
 REPORT_KINDS = ["Injured", "Sick", "Aggressive", "Other"]
 HABIT = {"T": "Tree", "S": "Shrub", "H": "Herb", "C": "Climber", "G": "Grass"}
@@ -47,27 +48,73 @@ def init_db():
     """)
     try: db.execute("ALTER TABLE entries ADD COLUMN photo TEXT")      # upgrade older databases
     except sqlite3.OperationalError: pass
-    with open(os.path.join(BASE, "species_data.json"), encoding="utf-8") as f:      # (re)load the plant catalog; safe to run repeatedly
-        for x in json.load(f):
-            db.execute("INSERT OR REPLACE INTO species (id,sci,common,family,habit,uses,cat,loc,basis) VALUES (?,?,?,?,?,?,?,?,?)",
-                       (x["no"], x["sci"], x["common"], x["family"], x["habit"], x["use"], x["cat"], x["loc"], x["basis"]))
+    
+    # (re)load the plant catalog; safe to run repeatedly
+    if os.path.exists(os.path.join(BASE, "species_data.json")):
+        with open(os.path.join(BASE, "species_data.json"), encoding="utf-8") as f:
+            for x in json.load(f):
+                db.execute("INSERT OR REPLACE INTO species (id,sci,common,family,habit,uses,cat,loc,basis) VALUES (?,?,?,?,?,?,?,?,?)",
+                           (x["no"], x["sci"], x["common"], x["family"], x["habit"], x["use"], x["cat"], x["loc"], x["basis"]))
+    
     if db.execute("SELECT COUNT(*) FROM entries").fetchone()[0] == 0:  # seed demo data once
         today = date.today()
-        for sci, common in db.execute("SELECT sci, common FROM species WHERE habit='T' ORDER BY RANDOM() LIMIT 8").fetchall():
-            cur = db.execute("INSERT INTO entries (kind,name,species,status,notes,last_update,lat,lon) VALUES (?,?,?,?,?,?,?,?)",
-                ("tree", f"Tree-{random.randint(100,999)}", common or sci, "Sample", "Sample data", str(today),
-                 29.8649 + random.uniform(-.004, .004), 77.8965 + random.uniform(-.004, .004)))
-            d = today - timedelta(days=random.randint(30, 200))
+        
+        # Exact tree coordinates mapped from the ECE Dept, IIT Roorkee
+        ece_trees = [
+            ("Tree 1", "ficus benghalensis", 29.863111, 77.895694, "tree1.jpeg"),
+            ("Tree 2", "polyalthia longifolia", 29.863222, 77.895361, "tree2.jpeg"),
+            ("Tree 3", "ficus religiosa", 29.863472, 77.895389, "tree3.jpeg"),
+            ("Tree 4", "azadirachta indica", 29.863500, 77.895361, "tree4.jpeg"),
+            ("Tree 5", "roystonea regia", 29.863556, 77.895361, "tree5.jpeg"),
+            ("Tree 6", "alstonia scholaris", 29.863944, 77.895417, "tree6.jpeg"),
+            ("Tree 7", "mangifera indica", 29.863917, 77.895500, "tree7.jpeg"),
+            ("Tree 8", "platycladus orientalis", 29.863944, 77.895778, "tree8.jpeg"),
+            ("Tree 9", "dalbergia sissoo", 29.863889, 77.896111, "tree9.jpeg"),
+            ("Tree 10", "terminalia arjuna", 29.863667, 77.896139, "tree10.jpeg"),
+            ("Tree 11", "tamarindus indica", 29.863556, 77.896083, "tree11.jpeg"),
+            ("Tree 12", "bombax ceiba", 29.863528, 77.896028, "tree12.jpeg"),
+            ("Tree 13", "butea monosperma", 29.863444, 77.896056, "tree13.jpeg"),
+            ("Tree 14", "ficus racemosa", 29.863417, 77.896139, "tree14.jpeg")
+        ]
+
+        for name, species, lat, lon, photo in ece_trees:
+            cur = db.execute(
+                "INSERT INTO entries (kind,name,species,status,notes,last_update,lat,lon,photo) VALUES (?,?,?,?,?,?,?,?,?)",
+                ("tree", name, species, "Active", "ECE Dept Campus Tree", str(today), lat, lon, photo)
+            )
+            
+            if random.choice([True, False]):
+                d = today - timedelta(days=random.randint(30, 200))
+                db.execute("INSERT INTO events (entry_id,date,type,note,next_due) VALUES (?,?,?,?,?)",
+                           (cur.lastrowid, str(d), "Fertilizer", "Routine maintenance", str(d + timedelta(days=120))))
+
+        # Seed specific campus dogs with their photos
+        campus_dogs = [
+            ("Sheru", "Indian pariah", "dog1.png"),
+            ("Brownie", "Indian pariah", "dog2.png"),
+            ("Patch", "Indian pariah", "dog3.png"),
+            ("Raju", "Indian pariah", "dog4.png"),
+            ("Chotu", "Indian pariah", "dog5.png"),
+            ("Snowy", "Labrador Retriever", "dog6.png"),
+            ("Bhola", "Himalayan Sheepdog mix", "dog7.png"),
+            ("Kalu", "Indian pariah", "dog8.png"),
+            ("Lali", "Indian pariah", "dog9.png"),
+            ("Moti", "Indian pariah", "dog10.png")
+        ]
+
+        for name, species, photo in campus_dogs:
+            lat = 29.8635 + random.uniform(-.003, .003)
+            lon = 77.8958 + random.uniform(-.003, .003)
+            
+            cur = db.execute(
+                "INSERT INTO entries (kind,name,species,status,notes,last_update,lat,lon,photo) VALUES (?,?,?,?,?,?,?,?,?)",
+                ("dog", name, species, "Active", "Campus community dog", str(today), lat, lon, photo)
+            )
+            
+            d = today - timedelta(days=random.randint(30, 300))
             db.execute("INSERT INTO events (entry_id,date,type,note,next_due) VALUES (?,?,?,?,?)",
-                       (cur.lastrowid, str(d), "Fertilizer", "Sample", str(d + timedelta(days=120))))
-        for i in range(4):
-            k = random.choice(["dog", "cat"])
-            cur = db.execute("INSERT INTO entries (kind,name,species,status,notes,last_update,lat,lon) VALUES (?,?,?,?,?,?,?,?)",
-                (k, f"{k.title()}-{i+1}", "Indian pariah" if k == "dog" else "Domestic shorthair", "Sample", "Sample data",
-                 str(today), 29.8649 + random.uniform(-.004, .004), 77.8965 + random.uniform(-.004, .004)))
-            d = today - timedelta(days=random.randint(100, 400))
-            db.execute("INSERT INTO events (entry_id,date,type,note,next_due) VALUES (?,?,?,?,?)",
-                       (cur.lastrowid, str(d), "Vaccination", "Sample", str(d + timedelta(days=365))))
+                       (cur.lastrowid, str(d), "Vaccination", "Anti-Rabies / 7-in-1", str(d + timedelta(days=365))))
+
     db.commit(); db.close()
 
 # ---------- HELPERS ----------
@@ -230,7 +277,7 @@ def toggle(i):
     get_db().execute("UPDATE entries SET tagged = 1 - tagged WHERE id=?", (i,)); get_db().commit()
     return redirect(request.referrer or url_for("dashboard"))
 
-@app.route("/entry/<int:i>")          # the page a QR scan lands on (public)
+@app.route("/entry/<int:i>")
 def entry(i):
     db = get_db()
     e = db.execute("SELECT * FROM entries WHERE id=?", (i,)).fetchone() or abort(404)
@@ -257,7 +304,7 @@ def del_event(ev):
     get_db().execute("DELETE FROM events WHERE id=?", (ev,)); get_db().commit()
     return redirect(url_for("entry", i=r["entry_id"]))
 
-@app.route("/report/<int:i>", methods=["POST"])       # public: anyone who scans can report
+@app.route("/report/<int:i>", methods=["POST"])
 def report(i):
     if request.form.get("kind") not in REPORT_KINDS: abort(400)
     get_db().execute("INSERT INTO reports (entry_id,date,kind,note) VALUES (?,?,?,?)",
@@ -313,7 +360,7 @@ def species_counts():
         if m: counts[m["id"]] = counts.get(m["id"], 0) + 1
     return counts
 
-@app.route("/qr/species/<int:i>.png")          # QR for a species sign (opens the catalog page, no coordinates needed)
+@app.route("/qr/species/<int:i>.png")
 def qr_species(i):
     img = qrcode.make(base_url() + f"/species/{i}")
     buf = io.BytesIO(); img.save(buf, "PNG"); buf.seek(0)

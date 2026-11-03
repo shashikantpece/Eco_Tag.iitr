@@ -4,9 +4,7 @@
  <div class="stat"><b>{{stats.total}}</b><span>Total entries</span></div>
  <div class="stat"><b>{{stats.tree}}</b><span>Trees</span></div>
  <div class="stat"><b>{{stats.dog}}</b><span>Dogs</span></div>
- <div class="stat"><b>{{stats.cat}}</b><span>Cats</span></div>
  <div class="stat"><b>{{stats.tagged}}/{{stats.total}}</b><span>QR tags placed</span></div>
- <div class="stat"><b>{{stats.reports}}</b><span>Open reports</span></div>
 </div>
 {% if due %}<div class="alert"><b>⏰ {{due|length}} care task(s) due or overdue</b>
  {% for d in due %}<div><a href="/entry/{{d.id}}">{{d.name}}</a> · {{d.type}} ·
